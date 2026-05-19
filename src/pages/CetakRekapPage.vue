@@ -194,17 +194,22 @@ function doPrint() {
         <div class="chapter-content">
           <p>Rata-rata nilai raport semester 7–11 untuk setiap siswa:</p>
           <div class="table-wrapper">
-            <table class="print-table compact">
+            <table class="print-table compact fixed-table">
+              <colgroup>
+                <col style="width: 40px" />
+                <col style="width: 250px" />
+                <col v-for="m in store.mapelList" :key="m.id" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style="width:30px">No</th>
+                  <th>No</th>
                   <th>Nama</th>
                   <th v-for="m in store.mapelList" :key="m.id">{{ m.kode }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(s, idx) in sortedSiswa" :key="s.id">
-                  <td>{{ idx + 1 }}</td>
+                  <td class="num-cell">{{ idx + 1 }}</td>
                   <td class="name-cell">{{ s.nama }}</td>
                   <td v-for="m in store.mapelList" :key="m.id" class="num-cell">{{ store.getNilaiRaport(s.id, m.id)?.rataRata?.toFixed(2) ?? '-' }}</td>
                 </tr>
@@ -221,17 +226,22 @@ function doPrint() {
         <div class="chapter-content">
           <p>Nilai ujian madrasah (asli) untuk setiap siswa:</p>
           <div class="table-wrapper">
-            <table class="print-table compact">
+            <table class="print-table compact fixed-table">
+              <colgroup>
+                <col style="width: 40px" />
+                <col style="width: 250px" />
+                <col v-for="m in store.mapelList" :key="m.id" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style="width:30px">No</th>
+                  <th>No</th>
                   <th>Nama</th>
                   <th v-for="m in store.mapelList" :key="m.id">{{ m.kode }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(s, idx) in sortedSiswa" :key="s.id">
-                  <td>{{ idx + 1 }}</td>
+                  <td class="num-cell">{{ idx + 1 }}</td>
                   <td class="name-cell">{{ s.nama }}</td>
                   <td v-for="m in store.mapelList" :key="m.id" class="num-cell">{{ store.getNilaiUjian(s.id, m.id)?.nilai?.toFixed(2) ?? '-' }}</td>
                 </tr>
@@ -248,17 +258,22 @@ function doPrint() {
         <div class="chapter-content">
           <p>Nilai ijazah akhir (setelah katrol jika berlaku):</p>
           <div class="table-wrapper">
-            <table class="print-table compact">
+            <table class="print-table compact fixed-table">
+              <colgroup>
+                <col style="width: 40px" />
+                <col style="width: 250px" />
+                <col v-for="m in store.mapelList" :key="m.id" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style="width:30px">No</th>
+                  <th>No</th>
                   <th>Nama</th>
                   <th v-for="m in store.mapelList" :key="m.id">{{ m.kode }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="(s, idx) in sortedSiswa" :key="s.id">
-                  <td>{{ idx + 1 }}</td>
+                  <td class="num-cell">{{ idx + 1 }}</td>
                   <td class="name-cell">{{ s.nama }}</td>
                   <td v-for="m in store.mapelList" :key="m.id" class="num-cell">{{ store.hitungNilaiIjazah(s.id, m.id, true)?.toFixed(2) ?? '-' }}</td>
                 </tr>
@@ -300,7 +315,7 @@ function doPrint() {
   border: 1px solid var(--border-default);
   border-radius: 0.75rem;
   padding: 2rem;
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -359,8 +374,9 @@ function doPrint() {
 .print-table th, .print-table td { border: 1px solid var(--border-default); padding: 0.375rem 0.5rem; font-size: 0.8125rem; }
 .print-table th { background: var(--bg-muted); font-weight: 600; text-align: center; color: var(--text-secondary); }
 .print-table td { color: var(--text-primary); }
-.print-table.compact th, .print-table.compact td { padding: 0.25rem 0.375rem; font-size: 0.75rem; }
-.name-cell { white-space: nowrap; font-weight: 500; }
+.print-table.compact th, .print-table.compact td { padding: 0.15rem 0.25rem; font-size: 0.65rem; }
+.fixed-table { table-layout: fixed; width: 100%; }
+.name-cell { white-space: nowrap; font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
 .num-cell { text-align: center; }
 .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
@@ -371,6 +387,10 @@ function doPrint() {
 
 /* PRINT */
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 1cm 1.5cm;
+  }
   .no-print { display: none !important; }
   .print-doc { background: white; border: none; padding: 0; max-width: none; border-radius: 0; }
   .page-break { page-break-after: always; border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
