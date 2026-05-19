@@ -50,20 +50,20 @@ async function handleImport(event: Event) {
     <div class="toolbar">
       <div class="mapel-select">
         <label class="form-label">Mata Pelajaran:</label>
-        <select v-model="selectedMapelId" class="form-input" style="max-width:300px">
+        <select v-model="selectedMapelId" class="form-input select-mapel">
           <option v-for="m in store.mapelList" :key="m.id" :value="m.id">{{ m.nama }}</option>
         </select>
       </div>
       <div class="toolbar-actions">
         <button class="btn btn-secondary btn-sm" @click="exportTemplateNilaiUjian(store.mapelList, store.sortedSiswa)">
-          <Download :size="16" /> <span>Template</span>
+          <Download :size="16" /> <span class="btn-text">Template</span>
         </button>
         <label class="btn btn-secondary btn-sm" style="cursor:pointer">
-          <Upload :size="16" /> <span>Import</span>
+          <Upload :size="16" /> <span class="btn-text">Import</span>
           <input type="file" accept=".xlsx,.xls" @change="handleImport" hidden />
         </label>
         <button class="btn btn-success btn-sm" @click="saveAll">
-          <Save :size="16" /> <span>Simpan</span>
+          <Save :size="16" /> <span class="btn-text">Simpan</span>
         </button>
       </div>
     </div>
@@ -72,7 +72,6 @@ async function handleImport(event: Event) {
       <div class="card-header">
         <div>
           <h3 class="card-title">Nilai Ujian: {{ selectedMapel.nama }}</h3>
-          <p class="card-subtitle">KKM: {{ selectedMapel.kkm }}</p>
         </div>
       </div>
       <div class="table-wrapper">
@@ -82,7 +81,6 @@ async function handleImport(event: Event) {
               <th style="width:44px">No</th>
               <th>Nama Siswa</th>
               <th style="width:120px">Nilai Ujian</th>
-              <th style="width:80px">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -98,14 +96,9 @@ async function handleImport(event: Event) {
                   min="0" max="100"
                 />
               </td>
-              <td>
-                <span v-if="row.nilaiUjian.nilai !== null" class="badge" :class="row.nilaiUjian.nilai >= (selectedMapel?.kkm || 75) ? 'badge-success' : 'badge-danger'">
-                  {{ row.nilaiUjian.nilai >= (selectedMapel?.kkm || 75) ? '✓' : '✗' }}
-                </span>
-              </td>
             </tr>
             <tr v-if="store.sortedSiswa.length === 0">
-              <td colspan="4" class="empty-state">Belum ada data siswa.</td>
+              <td colspan="3" class="empty-state">Belum ada data siswa.</td>
             </tr>
           </tbody>
         </table>
@@ -116,16 +109,18 @@ async function handleImport(event: Event) {
 
 <style scoped>
 .toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
-.mapel-select { display: flex; flex-direction: column; gap: 0.375rem; }
+.mapel-select { display: flex; flex-direction: column; gap: 0.375rem; flex: 1; min-width: 0; }
+.select-mapel { max-width: 300px; }
 .toolbar-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .card-title { font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); }
-.card-subtitle { font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.125rem; }
-.table-wrapper { overflow-x: auto; }
+.table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .cell-input { width: 90px; padding: 0.375rem 0.5rem; text-align: center; }
 .empty-state { text-align: center; padding: 2.5rem 1rem !important; color: var(--text-muted); }
 .form-label { font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); }
 
 @media (max-width: 640px) {
   .toolbar { flex-direction: column; align-items: stretch; }
+  .select-mapel { max-width: none; }
+  .btn-text { display: none; }
 }
 </style>

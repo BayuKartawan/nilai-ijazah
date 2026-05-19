@@ -9,7 +9,7 @@ export interface Mapel {
   kode: string
   nama: string
   kelompok: 'A' | 'B' | 'C' // A: Wajib, B: Pilihan, C: Muatan Lokal
-  kkm: number // Nilai minimum kelulusan (KKM = SKL, satu nilai saja)
+  kkm: number // SKL (Standar Kelulusan) untuk nilai ijazah
   isPAI: boolean // Untuk menandai mapel PAI
 }
 

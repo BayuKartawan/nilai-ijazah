@@ -6,7 +6,7 @@ import type { ThemeMode } from '@/stores/theme'
 import {
   LayoutDashboard, Users, BookOpen, FileText, ClipboardCheck,
   TrendingUp, Sun, Moon, Monitor,
-  Menu, X, GraduationCap, HardDrive
+  Menu, X, GraduationCap, HardDrive, Printer
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -22,6 +22,7 @@ const menuItems = [
   { path: '/nilai-raport', label: 'Nilai Raport', icon: FileText },
   { path: '/ujian-madrasah', label: 'Ujian Madrasah', icon: ClipboardCheck },
   { path: '/rekap', label: 'Rekap Nilai', icon: TrendingUp },
+  { path: '/cetak-rekap', label: 'Cetak Rekap', icon: Printer },
   { path: '/backup', label: 'Backup & Restore', icon: HardDrive },
 ]
 

@@ -36,9 +36,9 @@ function doExport() {
   <div class="fade-in">
     <div class="toolbar">
       <div class="tabs">
-        <button class="tab-btn" :class="{ active: activeTab === 'raport' }" @click="activeTab = 'raport'">Nilai Raport</button>
-        <button class="tab-btn" :class="{ active: activeTab === 'ujian' }" @click="activeTab = 'ujian'">Ujian Madrasah</button>
-        <button class="tab-btn" :class="{ active: activeTab === 'ijazah' }" @click="activeTab = 'ijazah'">Nilai Ijazah</button>
+        <button class="tab-btn" :class="{ active: activeTab === 'raport' }" @click="activeTab = 'raport'">Raport</button>
+        <button class="tab-btn" :class="{ active: activeTab === 'ujian' }" @click="activeTab = 'ujian'">Ujian</button>
+        <button class="tab-btn" :class="{ active: activeTab === 'ijazah' }" @click="activeTab = 'ijazah'">Ijazah</button>
       </div>
       <div class="toolbar-actions">
         <div class="search-box">
@@ -46,7 +46,7 @@ function doExport() {
           <input v-model="searchQuery" type="text" placeholder="Cari..." class="form-input search-input" />
         </div>
         <button class="btn btn-secondary btn-sm" @click="doExport">
-          <Download :size="16" /> <span>Export</span>
+          <Download :size="16" /> <span class="btn-text">Export</span>
         </button>
       </div>
     </div>
@@ -68,9 +68,7 @@ function doExport() {
               <td>{{ idx + 1 }}</td>
               <td style="font-weight:500; white-space:nowrap">{{ siswa.nama }}</td>
               <td v-for="m in store.mapelList" :key="m.id" style="text-align:center">
-                <span :class="{ 'text-warn': (store.getNilaiRaport(siswa.id, m.id)?.rataRata ?? 0) < m.kkm }">
-                  {{ store.getNilaiRaport(siswa.id, m.id)?.rataRata?.toFixed(2) ?? '-' }}
-                </span>
+                {{ store.getNilaiRaport(siswa.id, m.id)?.rataRata?.toFixed(2) ?? '-' }}
               </td>
             </tr>
           </tbody>
@@ -80,7 +78,7 @@ function doExport() {
 
     <!-- Ujian -->
     <div v-if="activeTab === 'ujian'" class="card">
-      <div class="card-header"><h3 class="card-title">Rekap Nilai Ujian</h3></div>
+      <div class="card-header"><h3 class="card-title">Rekap Nilai Ujian Madrasah</h3></div>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
@@ -95,9 +93,7 @@ function doExport() {
               <td>{{ idx + 1 }}</td>
               <td style="font-weight:500; white-space:nowrap">{{ siswa.nama }}</td>
               <td v-for="m in store.mapelList" :key="m.id" style="text-align:center">
-                <span :class="{ 'text-warn': (store.getNilaiUjian(siswa.id, m.id)?.nilai ?? 0) < m.kkm }">
-                  {{ store.getNilaiUjian(siswa.id, m.id)?.nilai?.toFixed(2) ?? '-' }}
-                </span>
+                {{ store.getNilaiUjian(siswa.id, m.id)?.nilai?.toFixed(2) ?? '-' }}
               </td>
             </tr>
           </tbody>
@@ -113,7 +109,7 @@ function doExport() {
           <p class="card-subtitle">Bobot: Raport {{ store.settingKatrol.bobotRaport }}% + Ujian {{ store.settingKatrol.bobotUjian }}%</p>
         </div>
         <button class="btn btn-primary btn-sm" @click="runKatrol">
-          <TrendingUp :size="16" /> <span>Katrol Nilai Ijazah</span>
+          <TrendingUp :size="16" /> <span class="btn-text">Katrol Ijazah</span>
         </button>
       </div>
       <div class="table-wrapper">
@@ -136,7 +132,11 @@ function doExport() {
               <td>{{ idx + 1 }}</td>
               <td style="font-weight:500; white-space:nowrap">{{ siswa.nama }}</td>
               <template v-for="m in store.mapelList" :key="m.id">
-                <td style="text-align:center">{{ store.hitungNilaiIjazah(siswa.id, m.id, false)?.toFixed(2) ?? '-' }}</td>
+                <td style="text-align:center">
+                  <span :class="{ 'text-warn': (store.hitungNilaiIjazah(siswa.id, m.id, false) ?? 100) < m.kkm }">
+                    {{ store.hitungNilaiIjazah(siswa.id, m.id, false)?.toFixed(2) ?? '-' }}
+                  </span>
+                </td>
                 <td style="text-align:center">
                   <span :class="{ 'text-katrol': store.getNilaiUjian(siswa.id, m.id)?.isKatrol }">
                     {{ store.hitungNilaiIjazah(siswa.id, m.id, true)?.toFixed(2) ?? '-' }}
@@ -152,7 +152,7 @@ function doExport() {
 </template>
 
 <style scoped>
-.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
 .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border-default); }
 .toolbar-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .search-box { position: relative; }
@@ -160,9 +160,14 @@ function doExport() {
 .search-input { padding-left: 2.25rem; width: 180px; }
 .card-title { font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); }
 .card-subtitle { font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.125rem; }
-.table-wrapper { overflow-x: auto; }
+.table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .text-warn { color: var(--color-rose-500); font-weight: 600; }
 .text-katrol { color: var(--color-emerald-600); font-weight: 600; }
 
-@media (max-width: 640px) { .toolbar { flex-direction: column; align-items: stretch; } .search-input { width: 100%; } }
+@media (max-width: 640px) {
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .search-input { width: 100%; }
+  .btn-text { display: none; }
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
 </style>

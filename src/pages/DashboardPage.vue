@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDataStore } from '@/stores/data'
-import { Users, BookOpen, FileText, ClipboardCheck, TrendingUp } from 'lucide-vue-next'
+import { Users, BookOpen, FileText, ClipboardCheck, TrendingUp, Printer } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
 const store = useDataStore()
@@ -28,6 +28,7 @@ const quickActions = [
   { label: 'Nilai Raport', icon: FileText, path: '/nilai-raport', color: '#f59e0b' },
   { label: 'Ujian Madrasah', icon: ClipboardCheck, path: '/ujian-madrasah', color: '#f43f5e' },
   { label: 'Rekap Nilai', icon: TrendingUp, path: '/rekap', color: '#8b5cf6' },
+  { label: 'Cetak Rekap', icon: Printer, path: '/cetak-rekap', color: '#0ea5e9' },
 ]
 </script>
 
@@ -84,6 +85,7 @@ const quickActions = [
           <li>Masukkan <strong>Nilai Raport</strong> untuk 5 semester (Semester 7–11)</li>
           <li>Input <strong>Nilai Ujian Madrasah</strong> untuk setiap mapel</li>
           <li>Cek <strong>Rekap Nilai</strong> dan lakukan <strong>Katrol Ijazah</strong> jika diperlukan</li>
+          <li><strong>Cetak Rekap</strong> untuk mencetak dokumen resmi rekap nilai ijazah</li>
         </ol>
       </div>
     </div>

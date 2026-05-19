@@ -90,7 +90,7 @@ function getKelompokLabel(k: string) {
                     <input v-model="form.kode" type="text" class="form-input" placeholder="Contoh: MTK" />
                   </div>
                   <div class="form-group">
-                    <label class="form-label">KKM (Standar Kelulusan)</label>
+                    <label class="form-label">SKL (Standar Kelulusan)</label>
                     <input v-model.number="form.kkm" type="number" class="form-input" min="0" max="100" />
                   </div>
                 </div>
@@ -139,7 +139,7 @@ function getKelompokLabel(k: string) {
               <th>Kode</th>
               <th>Nama Mata Pelajaran</th>
               <th class="hide-mobile">Kelompok</th>
-              <th>KKM</th>
+              <th>SKL</th>
               <th class="hide-mobile">Ket</th>
               <th style="width:80px">Aksi</th>
             </tr>

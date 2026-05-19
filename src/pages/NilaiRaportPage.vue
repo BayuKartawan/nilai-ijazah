@@ -52,20 +52,20 @@ async function handleImport(event: Event) {
     <div class="toolbar">
       <div class="mapel-select">
         <label class="form-label">Mata Pelajaran:</label>
-        <select v-model="selectedMapelId" class="form-input" style="max-width:300px">
+        <select v-model="selectedMapelId" class="form-input select-mapel">
           <option v-for="m in store.mapelList" :key="m.id" :value="m.id">{{ m.nama }}</option>
         </select>
       </div>
       <div class="toolbar-actions">
         <button class="btn btn-secondary btn-sm" @click="exportTemplateNilaiRaport(store.mapelList, store.sortedSiswa)">
-          <Download :size="16" /> <span>Template</span>
+          <Download :size="16" /> <span class="btn-text">Template</span>
         </button>
         <label class="btn btn-secondary btn-sm" style="cursor:pointer">
-          <Upload :size="16" /> <span>Import</span>
+          <Upload :size="16" /> <span class="btn-text">Import</span>
           <input type="file" accept=".xlsx,.xls" @change="handleImport" hidden />
         </label>
         <button class="btn btn-success btn-sm" @click="saveAll">
-          <Save :size="16" /> <span>Simpan</span>
+          <Save :size="16" /> <span class="btn-text">Simpan</span>
         </button>
       </div>
     </div>
@@ -74,7 +74,7 @@ async function handleImport(event: Event) {
       <div class="card-header">
         <div>
           <h3 class="card-title">{{ selectedMapel.nama }}</h3>
-          <p class="card-subtitle">Semester 7 – 11 | KKM: {{ selectedMapel.kkm }}</p>
+          <p class="card-subtitle">Semester 7 – 11 (Kelas 4 – 6)</p>
         </div>
       </div>
       <div class="table-wrapper">
@@ -83,12 +83,12 @@ async function handleImport(event: Event) {
             <tr>
               <th style="width:44px">No</th>
               <th>Nama Siswa</th>
-              <th style="width:80px">S7</th>
-              <th style="width:80px">S8</th>
-              <th style="width:80px">S9</th>
-              <th style="width:80px">S10</th>
-              <th style="width:80px">S11</th>
-              <th style="width:90px">Rata²</th>
+              <th style="width:72px">S7</th>
+              <th style="width:72px">S8</th>
+              <th style="width:72px">S9</th>
+              <th style="width:72px">S10</th>
+              <th style="width:72px">S11</th>
+              <th style="width:80px">Rata²</th>
             </tr>
           </thead>
           <tbody>
@@ -101,7 +101,7 @@ async function handleImport(event: Event) {
               <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester10" @change="updateValue(row.siswa.id, 'semester10', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
               <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester11" @change="updateValue(row.siswa.id, 'semester11', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
               <td>
-                <span class="rata-rata" :class="{ warn: row.nilaiRaport.rataRata !== null && row.nilaiRaport.rataRata < (selectedMapel?.kkm || 75) }">
+                <span class="rata-rata">
                   {{ row.nilaiRaport.rataRata !== null ? row.nilaiRaport.rataRata.toFixed(2) : '-' }}
                 </span>
               </td>
@@ -118,16 +118,21 @@ async function handleImport(event: Event) {
 
 <style scoped>
 .toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
-.mapel-select { display: flex; flex-direction: column; gap: 0.375rem; }
+.mapel-select { display: flex; flex-direction: column; gap: 0.375rem; flex: 1; min-width: 0; }
+.select-mapel { max-width: 300px; }
 .toolbar-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .card-title { font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); }
 .card-subtitle { font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.125rem; }
-.table-wrapper { overflow-x: auto; }
-.cell-input { width: 64px; padding: 0.375rem 0.375rem; text-align: center; font-size: 0.8125rem; }
+.table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.cell-input { width: 56px; padding: 0.375rem 0.25rem; text-align: center; font-size: 0.8125rem; }
 .rata-rata { font-weight: 600; color: var(--color-emerald-600); font-size: 0.875rem; }
-.rata-rata.warn { color: var(--color-rose-500); }
 .empty-state { text-align: center; padding: 2.5rem 1rem !important; color: var(--text-muted); }
 .form-label { font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); }
 
-@media (max-width: 640px) { .toolbar { flex-direction: column; align-items: stretch; } }
+@media (max-width: 640px) {
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .select-mapel { max-width: none; }
+  .btn-text { display: none; }
+  .cell-input { width: 48px; padding: 0.375rem 0.125rem; font-size: 0.75rem; }
+}
 </style>
