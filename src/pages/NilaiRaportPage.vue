@@ -18,7 +18,7 @@ const nilaiGrid = computed(() => {
       siswa,
       nilaiRaport: nr || {
         siswaId: siswa.id, mapelId: selectedMapelId.value,
-        semester3: null, semester4: null, semester5: null, semester6: null, semester7: null, rataRata: null
+        semester7: null, semester8: null, semester9: null, semester10: null, semester11: null, rataRata: null
       }
     }
   })
@@ -74,7 +74,7 @@ async function handleImport(event: Event) {
       <div class="card-header">
         <div>
           <h3 class="card-title">{{ selectedMapel.nama }}</h3>
-          <p class="card-subtitle">Semester 3 – 7 | KKM: {{ selectedMapel.kkm }}</p>
+          <p class="card-subtitle">Semester 7 – 11 | KKM: {{ selectedMapel.kkm }}</p>
         </div>
       </div>
       <div class="table-wrapper">
@@ -83,11 +83,11 @@ async function handleImport(event: Event) {
             <tr>
               <th style="width:44px">No</th>
               <th>Nama Siswa</th>
-              <th style="width:80px">S3</th>
-              <th style="width:80px">S4</th>
-              <th style="width:80px">S5</th>
-              <th style="width:80px">S6</th>
               <th style="width:80px">S7</th>
+              <th style="width:80px">S8</th>
+              <th style="width:80px">S9</th>
+              <th style="width:80px">S10</th>
+              <th style="width:80px">S11</th>
               <th style="width:90px">Rata²</th>
             </tr>
           </thead>
@@ -95,11 +95,11 @@ async function handleImport(event: Event) {
             <tr v-for="(row, idx) in nilaiGrid" :key="row.siswa.id">
               <td>{{ idx + 1 }}</td>
               <td style="font-weight:500">{{ row.siswa.nama }}</td>
-              <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester3" @change="updateValue(row.siswa.id, 'semester3', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
-              <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester4" @change="updateValue(row.siswa.id, 'semester4', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
-              <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester5" @change="updateValue(row.siswa.id, 'semester5', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
-              <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester6" @change="updateValue(row.siswa.id, 'semester6', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
               <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester7" @change="updateValue(row.siswa.id, 'semester7', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
+              <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester8" @change="updateValue(row.siswa.id, 'semester8', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
+              <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester9" @change="updateValue(row.siswa.id, 'semester9', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
+              <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester10" @change="updateValue(row.siswa.id, 'semester10', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
+              <td><input type="number" class="form-input cell-input" :value="row.nilaiRaport.semester11" @change="updateValue(row.siswa.id, 'semester11', ($event.target as HTMLInputElement).value)" min="0" max="100" /></td>
               <td>
                 <span class="rata-rata" :class="{ warn: row.nilaiRaport.rataRata !== null && row.nilaiRaport.rataRata < (selectedMapel?.kkm || 75) }">
                   {{ row.nilaiRaport.rataRata !== null ? row.nilaiRaport.rataRata.toFixed(2) : '-' }}

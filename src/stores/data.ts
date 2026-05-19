@@ -124,7 +124,7 @@ export const useDataStore = defineStore('data', () => {
     siswaList.value.forEach(s => {
       nilaiRaport.value.push({
         siswaId: s.id, mapelId: newMapel.id,
-        semester3: null, semester4: null, semester5: null, semester6: null, semester7: null,
+        semester7: null, semester8: null, semester9: null, semester10: null, semester11: null,
         rataRata: null
       })
       nilaiUjian.value.push({
@@ -157,7 +157,7 @@ export const useDataStore = defineStore('data', () => {
       if (!exists) {
         nilaiRaport.value.push({
           siswaId, mapelId: m.id,
-          semester3: null, semester4: null, semester5: null, semester6: null, semester7: null,
+          semester7: null, semester8: null, semester9: null, semester10: null, semester11: null,
           rataRata: null
         })
       }
@@ -175,7 +175,7 @@ export const useDataStore = defineStore('data', () => {
     const idx = nilaiRaport.value.findIndex(n => n.siswaId === siswaId && n.mapelId === mapelId)
     if (idx !== -1) {
       const nr = { ...nilaiRaport.value[idx]!, ...data } as NilaiRaport
-      const semesters = [nr.semester3, nr.semester4, nr.semester5, nr.semester6, nr.semester7].filter(v => v !== null) as number[]
+      const semesters = [nr.semester7, nr.semester8, nr.semester9, nr.semester10, nr.semester11].filter(v => v !== null) as number[]
       nr.rataRata = semesters.length > 0 ? Math.round((semesters.reduce((a, b) => a + b, 0) / semesters.length) * 100) / 100 : null
       nilaiRaport.value[idx] = nr
       saveAll()

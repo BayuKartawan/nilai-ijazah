@@ -16,11 +16,11 @@ export interface Mapel {
 export interface NilaiRaport {
   siswaId: string
   mapelId: string
-  semester3: number | null
-  semester4: number | null
-  semester5: number | null
-  semester6: number | null
   semester7: number | null
+  semester8: number | null
+  semester9: number | null
+  semester10: number | null
+  semester11: number | null
   rataRata: number | null
 }
 

@@ -24,11 +24,11 @@ export function exportTemplateSiswa() {
 export function exportTemplateNilaiRaport(mapelList: Mapel[], siswaList: Siswa[]) {
   const wb = XLSX.utils.book_new()
   const semesters = [
-    { key: 'semester3', label: 'Semester 3' },
-    { key: 'semester4', label: 'Semester 4' },
-    { key: 'semester5', label: 'Semester 5' },
-    { key: 'semester6', label: 'Semester 6' },
     { key: 'semester7', label: 'Semester 7' },
+    { key: 'semester8', label: 'Semester 8' },
+    { key: 'semester9', label: 'Semester 9' },
+    { key: 'semester10', label: 'Semester 10' },
+    { key: 'semester11', label: 'Semester 11' },
   ]
 
   semesters.forEach(sem => {
@@ -110,11 +110,11 @@ export function parseNilaiRaportFromExcel(
         const results: { siswaId: string; mapelId: string; data: Partial<NilaiRaport> }[] = []
 
         const semesterMap: Record<string, keyof NilaiRaport> = {
-          'Semester 3': 'semester3',
-          'Semester 4': 'semester4',
-          'Semester 5': 'semester5',
-          'Semester 6': 'semester6',
           'Semester 7': 'semester7',
+          'Semester 8': 'semester8',
+          'Semester 9': 'semester9',
+          'Semester 10': 'semester10',
+          'Semester 11': 'semester11',
         }
 
         wb.SheetNames.forEach(sheetName => {

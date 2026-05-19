@@ -81,7 +81,7 @@ const quickActions = [
         <h3>Petunjuk Penggunaan</h3>
         <ol>
           <li>Input <strong>Data Siswa</strong> (NISN & Nama) dan atur <strong>Mata Pelajaran</strong></li>
-          <li>Masukkan <strong>Nilai Raport</strong> untuk 5 semester (Semester 3–7)</li>
+          <li>Masukkan <strong>Nilai Raport</strong> untuk 5 semester (Semester 7–11)</li>
           <li>Input <strong>Nilai Ujian Madrasah</strong> untuk setiap mapel</li>
           <li>Cek <strong>Rekap Nilai</strong> dan lakukan <strong>Katrol Ijazah</strong> jika diperlukan</li>
         </ol>
