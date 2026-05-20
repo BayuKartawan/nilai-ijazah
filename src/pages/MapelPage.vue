@@ -91,7 +91,7 @@ function getKelompokLabel(k: string) {
                   </div>
                   <div class="form-group">
                     <label class="form-label">SKL (Standar Kelulusan)</label>
-                    <input v-model.number="form.kkm" type="number" class="form-input" min="0" max="100" />
+                    <input v-model.number="form.kkm" type="number" class="form-input" min="1" max="100" />
                   </div>
                 </div>
                 <div class="form-group">

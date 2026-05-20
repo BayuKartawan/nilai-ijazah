@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue'
 import { useDataStore } from '@/stores/data'
-import { Plus, Pencil, Trash2, Upload, Download, Search, X } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Upload, Download, Search, X, Loader2 } from 'lucide-vue-next'
 import { exportTemplateSiswa, parseSiswaFromExcel } from '@/utils/excel'
 import ModalDialog from '@/components/ModalDialog.vue'
 import type { Siswa } from '@/types'
@@ -110,6 +110,18 @@ async function handleImport(event: Event) {
 
 <template>
   <div class="fade-in">
+    <!-- Import Loader -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="importLoading" class="import-loader-overlay">
+          <div class="import-loader-box">
+            <Loader2 :size="28" class="spin-icon" />
+            <span>Mengimpor data...</span>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <div class="toolbar">
       <div class="search-box">
         <Search :size="16" class="search-icon" />
@@ -282,4 +294,22 @@ async function handleImport(event: Event) {
   .toolbar { flex-direction: column; align-items: stretch; }
   .search-box { max-width: none; }
 }
+
+/* Import loader */
+.import-loader-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.import-loader-box {
+  display: flex; align-items: center; gap: 0.625rem;
+  background: var(--bg-surface); border: 1px solid var(--border-default);
+  padding: 0.875rem 1.5rem; border-radius: 0.75rem;
+  font-size: 0.875rem; font-weight: 500; color: var(--text-primary);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+.spin-icon { animation: spin 0.8s linear infinite; color: var(--color-primary-600); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.fade-enter-active { transition: opacity 0.15s ease; }
+.fade-leave-active { transition: opacity 0.1s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

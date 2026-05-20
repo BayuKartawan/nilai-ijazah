@@ -111,7 +111,7 @@ const themeLabel = computed(() => {
       </header>
 
       <main class="content">
-        <div class="content-inner">
+        <div class="content-inner" :class="{ 'is-wide': route.path === '/rekap' }">
           <router-view />
         </div>
       </main>
@@ -225,6 +225,8 @@ const themeLabel = computed(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-width: 0;
+  overflow: hidden;
   transition: margin-left 0.2s ease;
 }
 
@@ -304,11 +306,18 @@ const themeLabel = computed(() => {
   padding: 1.25rem;
   display: flex;
   justify-content: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .content-inner {
   width: 100%;
   max-width: 1200px;
+  min-width: 0;
+}
+
+.content-inner.is-wide {
+  max-width: 100%;
 }
 
 /* Responsive */

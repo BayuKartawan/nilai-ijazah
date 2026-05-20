@@ -119,7 +119,9 @@ export const useDataStore = defineStore('data', () => {
 
   // ========== MAPEL ==========
   function addMapel(mapel: Omit<Mapel, 'id'>) {
-    const newMapel = { ...mapel, id: generateId() }
+    const clampedMapel = { ...mapel }
+    clampedMapel.kkm = Math.max(1, Math.min(100, clampedMapel.kkm || 75))
+    const newMapel = { ...clampedMapel, id: generateId() }
     mapelList.value.push(newMapel)
     siswaList.value.forEach(s => {
       nilaiRaport.value.push({
@@ -138,7 +140,11 @@ export const useDataStore = defineStore('data', () => {
   function updateMapel(id: string, data: Partial<Mapel>) {
     const idx = mapelList.value.findIndex(m => m.id === id)
     if (idx !== -1) {
-      mapelList.value[idx] = { ...mapelList.value[idx]!, ...data } as Mapel
+      const clampedData = { ...data }
+      if (clampedData.kkm !== undefined) {
+        clampedData.kkm = Math.max(1, Math.min(100, clampedData.kkm || 75))
+      }
+      mapelList.value[idx] = { ...mapelList.value[idx]!, ...clampedData } as Mapel
       saveAll()
     }
   }
@@ -171,10 +177,22 @@ export const useDataStore = defineStore('data', () => {
     })
   }
 
+  function clampNilai(v: number | null): number | null {
+    if (v === null) return null
+    return Math.max(1, Math.min(100, v))
+  }
+
   function updateNilaiRaport(siswaId: string, mapelId: string, data: Partial<NilaiRaport>) {
     const idx = nilaiRaport.value.findIndex(n => n.siswaId === siswaId && n.mapelId === mapelId)
     if (idx !== -1) {
-      const nr = { ...nilaiRaport.value[idx]!, ...data } as NilaiRaport
+      // Clamp semester values to 1-100
+      const clamped: Partial<NilaiRaport> = { ...data }
+      if (clamped.semester7 !== undefined) clamped.semester7 = clampNilai(clamped.semester7)
+      if (clamped.semester8 !== undefined) clamped.semester8 = clampNilai(clamped.semester8)
+      if (clamped.semester9 !== undefined) clamped.semester9 = clampNilai(clamped.semester9)
+      if (clamped.semester10 !== undefined) clamped.semester10 = clampNilai(clamped.semester10)
+      if (clamped.semester11 !== undefined) clamped.semester11 = clampNilai(clamped.semester11)
+      const nr = { ...nilaiRaport.value[idx]!, ...clamped } as NilaiRaport
       const semesters = [nr.semester7, nr.semester8, nr.semester9, nr.semester10, nr.semester11].filter(v => v !== null) as number[]
       nr.rataRata = semesters.length > 0 ? Math.round((semesters.reduce((a, b) => a + b, 0) / semesters.length) * 100) / 100 : null
       nilaiRaport.value[idx] = nr
@@ -190,7 +208,10 @@ export const useDataStore = defineStore('data', () => {
   function updateNilaiUjian(siswaId: string, mapelId: string, data: Partial<NilaiUjian>) {
     const idx = nilaiUjian.value.findIndex(n => n.siswaId === siswaId && n.mapelId === mapelId)
     if (idx !== -1) {
-      nilaiUjian.value[idx] = { ...nilaiUjian.value[idx]!, ...data } as NilaiUjian
+      // Clamp nilai to 1-100
+      const clamped: Partial<NilaiUjian> = { ...data }
+      if (clamped.nilai !== undefined) clamped.nilai = clampNilai(clamped.nilai)
+      nilaiUjian.value[idx] = { ...nilaiUjian.value[idx]!, ...clamped } as NilaiUjian
       saveAll()
     }
   }
@@ -234,6 +255,14 @@ export const useDataStore = defineStore('data', () => {
 
   function katrolNilaiIjazah() {
     mapelList.value.forEach(mapel => katrolGlobalMapelIjazah(mapel.id))
+  }
+
+  function batalKatrol() {
+    nilaiUjian.value.forEach(nu => {
+      nu.nilaiKatrol = null
+      nu.isKatrol = false
+    })
+    saveAll()
   }
 
   // ========== NILAI IJAZAH ==========
@@ -327,6 +356,7 @@ export const useDataStore = defineStore('data', () => {
 
     katrolGlobalMapelIjazah,
     katrolNilaiIjazah,
+    batalKatrol,
     hitungNilaiIjazah,
 
     totalSiswa,
