@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue'
 import { useDataStore } from '@/stores/data'
-import { Download, Search, TrendingUp, TrendingDown, Info, X } from 'lucide-vue-next'
-import { exportRekapNilai } from '@/utils/excel'
+import { Download, Search, TrendingUp, TrendingDown, Info, X, ChevronDown } from 'lucide-vue-next'
+import { exportRekapNilai, exportRekapIjazahAsli, exportRekapIjazahKatrol } from '@/utils/excel'
 import ModalDialog from '@/components/ModalDialog.vue'
 
 const store = useDataStore()
@@ -12,6 +12,8 @@ const searchQuery = ref('')
 const activeTab = ref<'raport' | 'ujian' | 'ijazah'>('raport')
 const showKatrolInfo = ref(false)
 const showBatalConfirm = ref(false)
+const shouldRound = ref(false)
+const showExportDropdown = ref(false)
 
 const filteredSiswa = computed(() => {
   const q = searchQuery.value.toLowerCase()
@@ -19,78 +21,113 @@ const filteredSiswa = computed(() => {
   return store.sortedSiswa.filter(s => s.nama.toLowerCase().includes(q) || s.nisn.includes(q))
 })
 
+// === Helper functions to retrieve rounded/unrounded values ===
+function getRaportVal(siswaId: string, mapelId: string): number | null {
+  const nr = store.getNilaiRaport(siswaId, mapelId)
+  if (nr?.rataRata == null) return null
+  return shouldRound.value ? Math.round(nr.rataRata) : nr.rataRata
+}
+
+function getUjianVal(siswaId: string, mapelId: string): number | null {
+  const nu = store.getNilaiUjian(siswaId, mapelId)
+  if (nu?.nilai == null) return null
+  return shouldRound.value ? Math.round(nu.nilai) : nu.nilai
+}
+
+function getIjazahVal(siswaId: string, mapelId: string, useKatrol: boolean): number | null {
+  const v = store.hitungNilaiIjazah(siswaId, mapelId, useKatrol)
+  if (v == null) return null
+  return shouldRound.value ? Math.round(v) : v
+}
+
 // === Per-siswa averages ===
 function avgRaportSiswa(siswaId: string): number | null {
   const vals: number[] = []
   store.mapelList.forEach(m => {
-    const nr = store.getNilaiRaport(siswaId, m.id)
-    if (nr?.rataRata != null) vals.push(nr.rataRata)
+    const v = getRaportVal(siswaId, m.id)
+    if (v != null) vals.push(v)
   })
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  if (vals.length === 0) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return shouldRound.value ? Math.round(avg) : avg
 }
 
 function avgUjianSiswa(siswaId: string): number | null {
   const vals: number[] = []
   store.mapelList.forEach(m => {
-    const nu = store.getNilaiUjian(siswaId, m.id)
-    if (nu?.nilai != null) vals.push(nu.nilai)
+    const v = getUjianVal(siswaId, m.id)
+    if (v != null) vals.push(v)
   })
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  if (vals.length === 0) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return shouldRound.value ? Math.round(avg) : avg
 }
 
 function avgIjazahAsliSiswa(siswaId: string): number | null {
   const vals: number[] = []
   store.mapelList.forEach(m => {
-    const v = store.hitungNilaiIjazah(siswaId, m.id, false)
+    const v = getIjazahVal(siswaId, m.id, false)
     if (v != null) vals.push(v)
   })
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  if (vals.length === 0) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return shouldRound.value ? Math.round(avg) : avg
 }
 
 function avgIjazahKatrolSiswa(siswaId: string): number | null {
   const vals: number[] = []
   store.mapelList.forEach(m => {
-    const v = store.hitungNilaiIjazah(siswaId, m.id, true)
+    const v = getIjazahVal(siswaId, m.id, true)
     if (v != null) vals.push(v)
   })
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  if (vals.length === 0) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return shouldRound.value ? Math.round(avg) : avg
 }
 
 // === Per-mapel averages (footer) ===
 function avgRaportMapel(mapelId: string): number | null {
   const vals: number[] = []
   store.siswaList.forEach(s => {
-    const nr = store.getNilaiRaport(s.id, mapelId)
-    if (nr?.rataRata != null) vals.push(nr.rataRata)
+    const v = getRaportVal(s.id, mapelId)
+    if (v != null) vals.push(v)
   })
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  if (vals.length === 0) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return shouldRound.value ? Math.round(avg) : avg
 }
 
 function avgUjianMapel(mapelId: string): number | null {
   const vals: number[] = []
   store.siswaList.forEach(s => {
-    const nu = store.getNilaiUjian(s.id, mapelId)
-    if (nu?.nilai != null) vals.push(nu.nilai)
+    const v = getUjianVal(s.id, mapelId)
+    if (v != null) vals.push(v)
   })
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  if (vals.length === 0) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return shouldRound.value ? Math.round(avg) : avg
 }
 
 function avgIjazahAsliMapel(mapelId: string): number | null {
   const vals: number[] = []
   store.siswaList.forEach(s => {
-    const v = store.hitungNilaiIjazah(s.id, mapelId, false)
+    const v = getIjazahVal(s.id, mapelId, false)
     if (v != null) vals.push(v)
   })
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  if (vals.length === 0) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return shouldRound.value ? Math.round(avg) : avg
 }
 
 function avgIjazahKatrolMapel(mapelId: string): number | null {
   const vals: number[] = []
   store.siswaList.forEach(s => {
-    const v = store.hitungNilaiIjazah(s.id, mapelId, true)
+    const v = getIjazahVal(s.id, mapelId, true)
     if (v != null) vals.push(v)
   })
-  return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+  if (vals.length === 0) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return shouldRound.value ? Math.round(avg) : avg
 }
 
 // Check if any katrol is active
@@ -106,13 +143,56 @@ function doBatalKatrol() {
   toast('Semua nilai katrol berhasil dibatalkan.', 'success')
 }
 
-function doExport() {
-  exportRekapNilai(store.siswaList, store.mapelList, store.getNilaiRaport, store.getNilaiUjian, store.hitungNilaiIjazah)
+function triggerExport(type: 'all' | 'asli' | 'katrol') {
+  showExportDropdown.value = false
+  if (type === 'all') {
+    exportRekapNilai(
+      store.siswaList,
+      store.mapelList,
+      store.getNilaiRaport,
+      store.getNilaiUjian,
+      store.hitungNilaiIjazah,
+      shouldRound.value
+    )
+    toast('Berhasil mengekspor semua data rekap!', 'success')
+  } else if (type === 'asli') {
+    exportRekapIjazahAsli(
+      store.siswaList,
+      store.mapelList,
+      store.hitungNilaiIjazah,
+      shouldRound.value
+    )
+    toast('Berhasil mengekspor rekap nilai ijazah asli!', 'success')
+  } else if (type === 'katrol') {
+    exportRekapIjazahKatrol(
+      store.siswaList,
+      store.mapelList,
+      store.hitungNilaiIjazah,
+      shouldRound.value
+    )
+    toast('Berhasil mengekspor rekap nilai ijazah katrol!', 'success')
+  }
 }
 
 function fmt(v: number | null): string {
-  return v != null ? v.toFixed(2) : '-'
+  if (v == null) return '-'
+  return shouldRound.value ? Math.round(v).toFixed(0) : v.toFixed(2)
 }
+
+function closeDropdown(e: MouseEvent) {
+  const target = e.target as HTMLElement
+  if (!target.closest('.dropdown-wrapper')) {
+    showExportDropdown.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('click', closeDropdown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', closeDropdown)
+})
 </script>
 
 <template>
@@ -124,13 +204,40 @@ function fmt(v: number | null): string {
         <button class="tab-btn" :class="{ active: activeTab === 'ijazah' }" @click="activeTab = 'ijazah'">Ijazah</button>
       </div>
       <div class="toolbar-actions">
+        <!-- Rounding Toggle Switch -->
+        <label class="toggle-switch">
+          <input type="checkbox" v-model="shouldRound" />
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Pembulatan</span>
+        </label>
+        
         <div class="search-box">
           <Search :size="16" class="search-icon" />
           <input v-model="searchQuery" type="text" placeholder="Cari..." class="form-input search-input" />
         </div>
-        <button class="btn btn-secondary btn-sm" @click="doExport">
-          <Download :size="16" /> <span class="btn-text">Export</span>
-        </button>
+        
+        <!-- Export Dropdown -->
+        <div class="dropdown-wrapper">
+          <button class="btn btn-secondary btn-sm" @click.stop="showExportDropdown = !showExportDropdown">
+            <Download :size="16" /> <span class="btn-text">Export</span> <ChevronDown :size="14" class="chevron-icon" />
+          </button>
+          <Transition name="slide-up">
+            <div v-if="showExportDropdown" class="dropdown-menu">
+              <button class="dropdown-item" @click="triggerExport('all')">
+                <span class="item-title">Export Semua Rekap</span>
+                <span class="item-desc">Raport, Ujian, &amp; Ijazah</span>
+              </button>
+              <button class="dropdown-item" @click="triggerExport('asli')">
+                <span class="item-title">Export Ijazah Asli</span>
+                <span class="item-desc">Khusus nilai ijazah asli</span>
+              </button>
+              <button class="dropdown-item" @click="triggerExport('katrol')">
+                <span class="item-title">Export Ijazah Katrol</span>
+                <span class="item-desc">Khusus nilai ijazah katrol</span>
+              </button>
+            </div>
+          </Transition>
+        </div>
       </div>
     </div>
 
@@ -152,7 +259,7 @@ function fmt(v: number | null): string {
               <td>{{ idx + 1 }}</td>
               <td style="font-weight:500; white-space:nowrap">{{ siswa.nama }}</td>
               <td v-for="m in store.mapelList" :key="m.id" style="text-align:center">
-                {{ store.getNilaiRaport(siswa.id, m.id)?.rataRata?.toFixed(2) ?? '-' }}
+                {{ fmt(getRaportVal(siswa.id, m.id)) }}
               </td>
               <td class="col-avg-val">{{ fmt(avgRaportSiswa(siswa.id)) }}</td>
             </tr>
@@ -186,7 +293,7 @@ function fmt(v: number | null): string {
               <td>{{ idx + 1 }}</td>
               <td style="font-weight:500; white-space:nowrap">{{ siswa.nama }}</td>
               <td v-for="m in store.mapelList" :key="m.id" style="text-align:center">
-                {{ store.getNilaiUjian(siswa.id, m.id)?.nilai?.toFixed(2) ?? '-' }}
+                {{ fmt(getUjianVal(siswa.id, m.id)) }}
               </td>
               <td class="col-avg-val">{{ fmt(avgUjianSiswa(siswa.id)) }}</td>
             </tr>
@@ -246,12 +353,12 @@ function fmt(v: number | null): string {
               <template v-for="m in store.mapelList" :key="m.id">
                 <td style="text-align:center">
                   <span :class="{ 'text-warn': (store.hitungNilaiIjazah(siswa.id, m.id, false) ?? 100) < m.kkm }">
-                    {{ store.hitungNilaiIjazah(siswa.id, m.id, false)?.toFixed(2) ?? '-' }}
+                    {{ fmt(getIjazahVal(siswa.id, m.id, false)) }}
                   </span>
                 </td>
                 <td style="text-align:center">
                   <span :class="{ 'text-katrol': store.getNilaiUjian(siswa.id, m.id)?.isKatrol }">
-                    {{ store.hitungNilaiIjazah(siswa.id, m.id, true)?.toFixed(2) ?? '-' }}
+                    {{ fmt(getIjazahVal(siswa.id, m.id, true)) }}
                   </span>
                 </td>
               </template>
@@ -477,11 +584,137 @@ function fmt(v: number | null): string {
   }
 }
 
+/* Rounding Toggle Switch */
+.toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.toggle-switch input {
+  display: none;
+}
+.toggle-slider {
+  position: relative;
+  width: 2.25rem;
+  height: 1.25rem;
+  background-color: var(--border-default);
+  border-radius: 1rem;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 0.85rem;
+  height: 0.85rem;
+  left: 0.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+.toggle-switch input:checked + .toggle-slider {
+  background-color: var(--color-primary-600);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateY(-50%) translateX(1rem);
+}
+.toggle-switch:hover .toggle-slider {
+  box-shadow: 0 0 0 2px var(--border-default);
+}
+
+/* Dropdown Wrapper */
+.dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.chevron-icon {
+  margin-left: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-wrapper:focus-within .chevron-icon {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 0.625rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  min-width: 220px;
+  overflow: hidden;
+  padding: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+/* Dropdown Items */
+.dropdown-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-muted);
+}
+
+.item-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.item-desc {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  margin-top: 0.0625rem;
+}
+
+/* Transition for slide up */
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.slide-up-enter-from {
+  transform: translateY(4px);
+  opacity: 0;
+}
+.slide-up-leave-to {
+  transform: translateY(4px);
+  opacity: 0;
+}
+
 @media (max-width: 640px) {
   .toolbar { flex-direction: column; align-items: stretch; }
   .search-input { width: 100%; }
   .btn-text { display: none; }
   .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .header-actions { flex-wrap: wrap; }
+  .toolbar-actions { width: 100%; justify-content: space-between; }
+  .toggle-switch { order: 2; }
+  .dropdown-wrapper { order: 3; }
+  .search-box { width: 100%; order: 1; }
 }
 </style>

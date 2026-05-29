@@ -206,7 +206,8 @@ export function exportRekapNilai(
   siswaList: Siswa[], mapelList: Mapel[],
   getNilaiRaport: (sid: string, mid: string) => NilaiRaport | undefined,
   getNilaiUjian: (sid: string, mid: string) => NilaiUjian | undefined,
-  hitungNilaiIjazah: (sid: string, mid: string, useKatrol: boolean) => number | null
+  hitungNilaiIjazah: (sid: string, mid: string, useKatrol: boolean) => number | null,
+  shouldRound: boolean
 ) {
   const wb = XLSX.utils.book_new()
   const headers = ['No', 'NISN', 'Nama Siswa']
@@ -224,11 +225,18 @@ export function exportRekapNilai(
     mapelList.forEach(mapel => {
       const nr = getNilaiRaport(siswa.id, mapel.id)
       const nu = getNilaiUjian(siswa.id, mapel.id)
-      row.push(nr?.rataRata ?? null)
-      row.push(nu?.nilai ?? null)
-      row.push(nu?.nilaiKatrol ?? nu?.nilai ?? null)
-      row.push(hitungNilaiIjazah(siswa.id, mapel.id, false))
-      row.push(hitungNilaiIjazah(siswa.id, mapel.id, true))
+      
+      const valRaport = nr?.rataRata ?? null
+      const valUjian = nu?.nilai ?? null
+      const valUjianKatrol = nu?.nilaiKatrol ?? nu?.nilai ?? null
+      const valIjazah = hitungNilaiIjazah(siswa.id, mapel.id, false)
+      const valIjazahKatrol = hitungNilaiIjazah(siswa.id, mapel.id, true)
+
+      row.push(valRaport !== null ? (shouldRound ? Math.round(valRaport) : valRaport) : null)
+      row.push(valUjian !== null ? (shouldRound ? Math.round(valUjian) : valUjian) : null)
+      row.push(valUjianKatrol !== null ? (shouldRound ? Math.round(valUjianKatrol) : valUjianKatrol) : null)
+      row.push(valIjazah !== null ? (shouldRound ? Math.round(valIjazah) : valIjazah) : null)
+      row.push(valIjazahKatrol !== null ? (shouldRound ? Math.round(valIjazahKatrol) : valIjazahKatrol) : null)
     })
     rows.push(row)
   })
@@ -238,5 +246,117 @@ export function exportRekapNilai(
   XLSX.utils.book_append_sheet(wb, ws, 'Rekap Nilai')
 
   const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-  saveAs(new Blob([buf], { type: 'application/octet-stream' }), 'rekap_nilai_ijazah.xlsx')
+  saveAs(new Blob([buf], { type: 'application/octet-stream' }), `rekap_nilai_ijazah${shouldRound ? '_bulat' : ''}.xlsx`)
+}
+
+export function exportRekapIjazahAsli(
+  siswaList: Siswa[],
+  mapelList: Mapel[],
+  hitungNilaiIjazah: (sid: string, mid: string, useKatrol: boolean) => number | null,
+  shouldRound: boolean
+) {
+  const wb = XLSX.utils.book_new()
+  const headers = ['No', 'NISN', 'Nama Siswa']
+  mapelList.forEach(m => {
+    headers.push(m.kode)
+  })
+  headers.push('Rata-rata')
+
+  const rows: (string | number | null)[][] = [headers]
+  siswaList.forEach((siswa, idx) => {
+    const row: (string | number | null)[] = [idx + 1, siswa.nisn, siswa.nama]
+    const vals: number[] = []
+    mapelList.forEach(mapel => {
+      const v = hitungNilaiIjazah(siswa.id, mapel.id, false)
+      if (v != null) {
+        const finalVal = shouldRound ? Math.round(v) : v
+        row.push(finalVal)
+        vals.push(finalVal)
+      } else {
+        row.push(null)
+      }
+    })
+    const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+    row.push(avg !== null ? (shouldRound ? Math.round(avg) : Number(avg.toFixed(2))) : null)
+    rows.push(row)
+  })
+
+  // Add footer row for per-mapel averages
+  const footerRow: (string | number | null)[] = ['Rata-rata Mapel', '', '']
+  mapelList.forEach(mapel => {
+    const vals: number[] = []
+    siswaList.forEach(siswa => {
+      const v = hitungNilaiIjazah(siswa.id, mapel.id, false)
+      if (v != null) {
+        vals.push(shouldRound ? Math.round(v) : v)
+      }
+    })
+    const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+    footerRow.push(avg !== null ? (shouldRound ? Math.round(avg) : Number(avg.toFixed(2))) : null)
+  })
+  footerRow.push(null)
+  rows.push(footerRow)
+
+  const ws = XLSX.utils.aoa_to_sheet(rows)
+  ws['!cols'] = headers.map((_, i) => ({ wch: i <= 2 ? 16 : 12 }))
+  XLSX.utils.book_append_sheet(wb, ws, 'Rekap Ijazah Asli')
+
+  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+  saveAs(new Blob([buf], { type: 'application/octet-stream' }), `rekap_nilai_ijazah_asli${shouldRound ? '_bulat' : ''}.xlsx`)
+}
+
+export function exportRekapIjazahKatrol(
+  siswaList: Siswa[],
+  mapelList: Mapel[],
+  hitungNilaiIjazah: (sid: string, mid: string, useKatrol: boolean) => number | null,
+  shouldRound: boolean
+) {
+  const wb = XLSX.utils.book_new()
+  const headers = ['No', 'NISN', 'Nama Siswa']
+  mapelList.forEach(m => {
+    headers.push(m.kode)
+  })
+  headers.push('Rata-rata')
+
+  const rows: (string | number | null)[][] = [headers]
+  siswaList.forEach((siswa, idx) => {
+    const row: (string | number | null)[] = [idx + 1, siswa.nisn, siswa.nama]
+    const vals: number[] = []
+    mapelList.forEach(mapel => {
+      const v = hitungNilaiIjazah(siswa.id, mapel.id, true)
+      if (v != null) {
+        const finalVal = shouldRound ? Math.round(v) : v
+        row.push(finalVal)
+        vals.push(finalVal)
+      } else {
+        row.push(null)
+      }
+    })
+    const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+    row.push(avg !== null ? (shouldRound ? Math.round(avg) : Number(avg.toFixed(2))) : null)
+    rows.push(row)
+  })
+
+  // Add footer row for per-mapel averages
+  const footerRow: (string | number | null)[] = ['Rata-rata Mapel', '', '']
+  mapelList.forEach(mapel => {
+    const vals: number[] = []
+    siswaList.forEach(siswa => {
+      const v = hitungNilaiIjazah(siswa.id, mapel.id, true)
+      if (v != null) {
+        vals.push(shouldRound ? Math.round(v) : v)
+      }
+    })
+    const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+    footerRow.push(avg !== null ? (shouldRound ? Math.round(avg) : Number(avg.toFixed(2))) : null)
+  })
+  footerRow.push(null)
+  rows.push(footerRow)
+
+  const ws = XLSX.utils.aoa_to_sheet(rows)
+  ws['!cols'] = headers.map((_, i) => ({ wch: i <= 2 ? 16 : 12 }))
+  XLSX.utils.book_append_sheet(wb, ws, 'Rekap Ijazah Katrol')
+
+  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+  saveAs(new Blob([buf], { type: 'application/octet-stream' }), `rekap_nilai_ijazah_katrol${shouldRound ? '_bulat' : ''}.xlsx`)
 }
